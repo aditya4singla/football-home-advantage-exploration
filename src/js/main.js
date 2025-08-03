@@ -17,7 +17,12 @@ function prevScene() {
 function renderScene(s) {
   d3.select('#vis').html(''); // clear previous
 
+  d3.select('#scene1').style('display', 'none');
+  d3.select('#scene2').style('display', 'none');
+  d3.select('#scene3').style('display', 'none');
+
   if (s === 1) {
+    d3.select('#scene1').style('display', 'block');
     renderScene1();
   }
 }

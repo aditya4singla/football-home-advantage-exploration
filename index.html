@@ -19,24 +19,40 @@
     </style>
   </head>
   <body>
-    <h1>Narrative Visualization</h1>
-    <button>Next</button>
-    <button>Previous</button>
-
     <div id="intro">
-      <h2>Welcome to the Narrative Visualization</h2>
+      <h2>How COVID impacted home stadium advantage in football</h2>
+
       <p>
         This visualization explores how "Home Advantage" has shifted over the years in the top 5 leagues in football.
       </p>
     </div>
 
+    <button>Next</button>
+    <button>Previous</button>
+    <br />
+    <br />
+
     <div id="scene1">
-      <h1>Home Advantage Goal Differential</h1>
-      <!-- <button onclick="togglePlayForScene1(true)">Play</button>
-      <button onclick="togglePlayForScene1(false)">Pause</button> -->
+      <h3>Scene 1: How Has Home Advantage Changed Over Time?</h3>
+      <p id="scene1-description">
+        This chart looks at how home advantage in football has evolved over the past 15+ years.
+        <br /><br />
+        It shows the average goal difference between home and away teams in the top five European leagues over time.
+        <br /><br />
+        “Home goal differential” means the average number of goals scored by the home team minus those scored by the
+        away team. Any positive value indicates that there is a home advantage, however, the smaller the value, the less
+        the advantage is felt.
+      </p>
     </div>
-    <div id="scene2"></div>
-    <div id="scene3"></div>
+
+    <div id="scene2">
+      <h3>Scene 2: Let's zoom in and see specific leagues.</h3>
+      <!-- <button onclick="togglePlayForScene2(true)">Play</button>
+      <button onclick="togglePlayForScene2(false)">Pause</button> -->
+    </div>
+    <div id="scene3">
+      <h3>Scene 3: User driven exploration.</h3>
+    </div>
 
     <div id="vis"></div>
 

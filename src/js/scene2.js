@@ -20,15 +20,27 @@ const state = {
 
 const colorPalette = d3.scaleOrdinal(d3.schemeObservable10);
 
-const DATA_PATH = './src/data/scene1/globalHalfYear.csv';
+const DATA_PATH = './src/data/scene1/homeAdvantageYearly.csv';
+
+const mapDivisionToReadableName = (division) => {
+  switch (division) {
+    case 'E1':
+      return 'Premier League';
+    case 'SP1':
+      return 'La Liga';
+    case 'I1':
+      return 'Serie A';
+    case 'F1':
+      return 'Ligue 1';
+    case 'G1':
+      return 'Bundesliga';
+    default:
+      return 'Unknown Division';
+  }
+};
 
 // Splits data into: pre-covid, during-covid, and post-covid
 const formatData = (data, years) => {
-  data.forEach((d) => {
-    d.Date = new Date(d.Date);
-    d.avg_goal_diff = +d.avg_goal_diff;
-  });
-
   const startYear = years[0];
   const endYear = years[1];
 
@@ -63,16 +75,7 @@ const drawLegend = (svg, divisions) => {
 };
 
 const drawAxes = ({ svg, x, y }) => {
-  const xAxis = d3
-    .axisBottom(x)
-    .tickValues([
-      new Date(2010, 0, 1),
-      new Date(2015, 0, 1),
-      new Date(2020, 0, 1),
-      new Date(2022, 0, 1),
-      new Date(2025, 2, 1),
-    ])
-    .tickFormat(d3.timeFormat('%Y'));
+  let xAxis = d3.axisBottom(x).tickValues([2010, 2015, 2020, 2022, 2025]).tickFormat(d3.format('d'));
   let yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format('.1f'));
 
   svg
@@ -82,70 +85,67 @@ const drawAxes = ({ svg, x, y }) => {
     .call(xAxis);
 
   svg.append('g').attr('class', 'y-axis').attr('transform', `translate(${SVG_CUSHION}, 0)`).call(yAxis);
-  svg
-    .append('text')
-    .attr('transform', 'rotate(-90)')
-    .attr('x', -svgHeight / 2)
-    .attr('y', SVG_CUSHION - 25)
-    .attr('dy', '-1em')
-    .style('text-anchor', 'middle')
-    .style('font-size', '14px')
-    .text('Home Goal Differential');
-
-  svg
-    .append('text')
-    .attr('x', svgWidth / 2)
-    .attr('y', svgHeight - SVG_CUSHION + 50)
-    .style('text-anchor', 'middle')
-    .style('font-size', '14px')
-    .text('Year');
 };
 
 export const renderScene1 = () => {
   const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
-  const goalDifferential = [0.1, 0.5];
+  const container = svg.append('g');
+  const years = [2007, 2025];
+  const goalDifferential = [0, 0.8];
+  const x = d3
+    .scaleLinear()
+    .domain(years)
+    .range([SVG_CUSHION, svgWidth - SVG_CUSHION]);
+  const y = d3
+    .scaleLinear()
+    .domain(goalDifferential)
+    .range([svgHeight - SVG_CUSHION, SVG_CUSHION]);
+  drawAxes({ svg, x, y });
 
   d3.csv(DATA_PATH).then((data) => {
     data.forEach((d) => {
-      d.date = new Date(d.Date);
+      if (d.avg_goal_diff < 0) {
+        console.warn('Negative goal diff:', d);
+      }
     });
-
-    const x = d3
-      .scaleTime()
-      .domain(d3.extent(data, (d) => d.date))
-      .range([SVG_CUSHION, svgWidth - SVG_CUSHION]);
-
-    const y = d3
-      .scaleLinear()
-      .domain(goalDifferential)
-      .range([svgHeight - SVG_CUSHION, SVG_CUSHION]);
-
-    drawAxes({ svg, x, y });
 
     const line = d3
       .line()
-      .x((d) => x(d.date))
+      .x((d) => x(d.Year))
       .y((d) => y(d.avg_goal_diff))
       .curve(d3.curveMonotoneX);
 
-    const container = svg.append('g');
+    const divisionGroup = container.append('g').attr('class', 'division-lines');
+    const divisionPaths = new Map();
 
-    const path = container
-      .append('path')
-      .datum(data)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 3)
-      .attr('d', line);
+    state.currentYear = state.currentYear + 1;
+    const { filteredData, nested } = formatData(data, years);
 
-    // Animating the line. Source: https://medium.com/@louisemoxy/create-a-d3-line-chart-animation-336f1cb7dd61
-    const totalLength = path.node().getTotalLength();
-    path
-      .attr('stroke-dasharray', totalLength)
-      .attr('stroke-dashoffset', totalLength)
-      .transition()
-      .duration(8000)
-      .ease(d3.easeLinear)
-      .attr('stroke-dashoffset', 0);
+    drawLegend(svg, Array.from(nested.keys()));
+
+    divisionGroup.selectAll('path').remove();
+
+    for (const [division, vals] of nested) {
+      const sorted = vals.sort((a, b) => a.Year - b.Year);
+      const path = divisionGroup
+        .append('path')
+        .datum(sorted)
+        .attr('fill', 'none')
+        .attr('stroke', colorPalette(division))
+        .attr('stroke-width', 2)
+        .attr('d', line);
+
+      // Animating the line. Source: https://medium.com/@louisemoxy/create-a-d3-line-chart-animation-336f1cb7dd61
+      const totalLength = path.node().getTotalLength();
+      path
+        .attr('stroke-dasharray', totalLength)
+        .attr('stroke-dashoffset', totalLength)
+        .transition()
+        .duration(10000)
+        .ease(d3.easeLinear)
+        .attr('stroke-dashoffset', 0);
+
+      divisionPaths.set(division, { path, data: sorted });
+    }
   });
 };
