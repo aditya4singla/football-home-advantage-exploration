@@ -1,36 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Narrative Visualization</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    #vis { margin-top: 30px; }
-    .annotation { fill: red; font-size: 14px; }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Narrative Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      #vis {
+        margin-top: 30px;
+      }
+      .annotation {
+        fill: red;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Narrative Visualization</h1>
+    <button onclick="nextScene()">Next</button>
+    <button onclick="prevScene()">Previous</button>
 
-<h1>Narrative Visualization</h1>
-<button onclick="nextScene()">Next</button>
-<button onclick="prevScene()">Previous</button>
+    <div id="intro">
+      <h2>Welcome to the Narrative Visualization</h2>
+      <p>
+        This visualization explores how "Home Advantage" has shifted over the years in the top 5 leagues in football.
+      </p>
+    </div>
 
-<div id="intro">
-    <h2>Welcome to the Narrative Visualization</h2>
-    <p>This visualization explores how "Home Advantage" has shifted over the years in the top 5 leagues in football.</p>
-</div>
+    <div id="scene1">
+      <h1>Home Advantage Goal Differential</h1>
+    </div>
+    <div id="scene2"></div>
+    <div id="scene3"></div>
 
-<div id="scene1">
-    <h1>Home Advantage Goal Differential</h1>
-</div>
-<div id="scene2"></div>
-<div id="scene3"></div>
+    <div id="vis"></div>
 
-<div id="vis"></div>
-
-
-<script src="./js/main.js"></script>
-
-</body>
+    <script src="./js/main.js"></script>
+  </body>
 </html>

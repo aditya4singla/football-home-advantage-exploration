@@ -16,33 +16,25 @@ function prevScene() {
 }
 
 function renderScene(s) {
-  d3.select("#vis").html(""); // clear previous
+  d3.select('#vis').html(''); // clear previous
 
-  const svg = d3
-    .select("#vis")
-    .append("svg")
-    .attr("width", svgWidth)
-    .attr("height", svgHeight);
+  const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
 
   if (s === 1) {
-    svg.data("data/Scene1HomeAdvantage.csv").attr("width");
+    svg.data('data/Scene1HomeAdvantage.csv').attr('width');
 
     // Scene 1: Overview
-    svg
-      .append("text")
-      .attr("x", 50)
-      .attr("y", 50)
-      .text("Scene 1: Overview of the Data");
+    svg.append('text').attr('x', 50).attr('y', 50).text('Scene 1: Overview of the Data');
 
     svg
-      .selectAll("circle")
+      .selectAll('circle')
       .data([10, 30, 50, 70])
       .enter()
-      .append("circle")
-      .attr("cx", (d) => d * 5)
-      .attr("cy", 200)
-      .attr("r", 10)
-      .attr("fill", "steelblue");
+      .append('circle')
+      .attr('cx', (d) => d * 5)
+      .attr('cy', 200)
+      .attr('r', 10)
+      .attr('fill', 'steelblue');
   }
 }
 
