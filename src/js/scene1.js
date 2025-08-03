@@ -20,7 +20,7 @@ const state = {
 
 const colorPalette = d3.scaleOrdinal(d3.schemeObservable10);
 
-const DATA_PATH = 'data/Scene1HomeAdvantage.csv';
+const DATA_PATH = './src/data/Scene1HomeAdvantage.csv';
 
 const mapDivisionToReadableName = (division) => {
   switch (division) {
@@ -56,27 +56,16 @@ const getVariableDataForScene1 = (data) => {
   // 1. Let us filter the data till currentYear
 
   // filteredData = data.filter((d) => d.Year <= Math.floor(state.currentYear));
-  filteredData = data;
+  const filteredData = data;
 
   const nested = d3.group(filteredData, (d) => d.Division);
 
   return { filteredData, nested };
 };
 
-const drawAxes = (svg) => {
-  const years = [2000, 2025];
-  const goalDifferential = [0, 0.8];
-
-  const x = d3
-    .scaleLinear()
-    .domain(years)
-    .range([SVG_CUSHION, svgWidth - SVG_CUSHION]);
+const drawAxes = ({ svg, x, y }) => {
   let xAxis = d3.axisBottom(x).ticks(12).tickFormat(d3.format('d'));
 
-  const y = d3
-    .scaleLinear()
-    .domain(goalDifferential)
-    .range([svgHeight - SVG_CUSHION, SVG_CUSHION]);
   let yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format('.1f'));
 
   svg
@@ -91,8 +80,17 @@ const drawAxes = (svg) => {
 export const renderScene1 = () => {
   const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
   const container = svg.append('g').attr('transform', `translate(${50},${50})`);
-
-  drawAxes(svg);
+  const years = [2000, 2025];
+  const goalDifferential = [0, 0.8];
+  const x = d3
+    .scaleLinear()
+    .domain(years)
+    .range([SVG_CUSHION, svgWidth - SVG_CUSHION]);
+  const y = d3
+    .scaleLinear()
+    .domain(goalDifferential)
+    .range([svgHeight - SVG_CUSHION, SVG_CUSHION]);
+  drawAxes({ svg, x, y });
 
   d3.csv(DATA_PATH).then((data) => {
     const line = d3
