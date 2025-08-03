@@ -20,8 +20,8 @@
   </head>
   <body>
     <h1>Narrative Visualization</h1>
-    <button onclick="nextScene()">Next</button>
-    <button onclick="prevScene()">Previous</button>
+    <button>Next</button>
+    <button>Previous</button>
 
     <div id="intro">
       <h2>Welcome to the Narrative Visualization</h2>
@@ -32,14 +32,14 @@
 
     <div id="scene1">
       <h1>Home Advantage Goal Differential</h1>
-      <button onclick="togglePlayForScene1(true)">Play</button>
-      <button onclick="togglePlayForScene1(false)">Pause</button>
+      <!-- <button onclick="togglePlayForScene1(true)">Play</button>
+      <button onclick="togglePlayForScene1(false)">Pause</button> -->
     </div>
     <div id="scene2"></div>
     <div id="scene3"></div>
 
     <div id="vis"></div>
 
-    <script src="./js/main.js"></script>
+    <script type="module" src="./js/main.js"></script>
   </body>
 </html>
