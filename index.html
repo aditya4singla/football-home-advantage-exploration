@@ -119,7 +119,7 @@
           This chart zooms into 2018-2025 and compares two extremes: the league that recovered most of its pre-COVID
           home advantage (Premier League) versus the one that remains far below its old level (Bundesliga).
         </p>
-
+        <p>
           Dashed lines show the pre-COVID baseline for each league so you can see how far they've diverged from their
           previous normal.
         </p>
@@ -131,13 +131,35 @@
         <div class="commentary" id="scene2-commentary"></div>
       </div>
     </div>
-    <div id="scene3">
-      <h3>Scene 3: User driven exploration.</h3>
+    <div id="scene3" class="scene">
+      <h2>Scene 3: Explore a League</h2>
+
+      <div class="controls" style="margin-bottom: 12px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center">
+        <label for="scene3-leagueSelect">League:</label>
+        <select id="scene3-leagueSelect">
+          <option value="E1">Premier League</option>
+          <option value="SP1">La Liga</option>
+          <option value="I1">Serie A</option>
+          <option value="F1">Ligue 1</option>
+          <option value="G1">Bundesliga</option>
+        </select>
+
+        <label for="scene3-fromYear">From:</label>
+        <select id="scene3-fromYear"></select>
+
+        <label for="scene3-toYear">To:</label>
+        <select id="scene3-toYear"></select>
+      </div>
+
+      <div class="content">
+        <div id="scene3-chart" style="flex: 2; min-width: 300px"></div>
+        <div id="scene3-summary"></div>
+      </div>
     </div>
 
     <div class="nav">
       <button class="btn" id="prev-btn">Previous</button>
-      <button class="btn" id="next-btn" disabled>Next</button>
+      <button class="btn" id="next-btn">Next</button>
     </div>
 
     <script type="module" src="./src/js/main.js"></script>
