@@ -7,8 +7,8 @@ import { svgWidth, svgHeight, SVG_CUSHION } from './constants.js';
 // 4. Show the goal differential rise again from 2022 to 2025
 
 const stepSequence = [
-  { start: 2000, end: 2020, duration: 7000, animate: true },
-  { start: 2020, end: 2020, duration: 3000, animate: false }, // pause at 2020
+  { start: 2008, end: 2020, duration: 7000, animate: true },
+  { start: 2020, end: 2021, duration: 3000, animate: false }, // pause at 2020
   { start: 2020, end: 2022, duration: 10000 },
   { start: 2022, end: 2025, duration: 7000 },
 ];
@@ -39,19 +39,7 @@ const mapDivisionToReadableName = (division) => {
   }
 };
 
-const togglePlayForScene1 = (shouldPlay) => {
-  if (shouldPlay) {
-    state.playing = true;
-
-    // Logic to start playing scene 1
-    console.log('Playing Scene 1');
-  } else {
-    // Logic to pause scene 1
-    state.playing = false;
-    console.log('Pausing Scene 1');
-  }
-};
-
+// Splits data into: pre-covid, during-covid, and post-covid
 const formatData = (data, years) => {
   const startYear = years[0];
   const endYear = years[1];
@@ -87,7 +75,7 @@ const drawLegend = (svg, divisions) => {
 };
 
 const drawAxes = ({ svg, x, y }) => {
-  let xAxis = d3.axisBottom(x).tickValues([2008, 2015, 2020, 2022, 2024]).tickFormat(d3.format('d'));
+  let xAxis = d3.axisBottom(x).tickValues([2010, 2015, 2020, 2022, 2025]).tickFormat(d3.format('d'));
   let yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format('.1f'));
 
   svg
@@ -102,7 +90,7 @@ const drawAxes = ({ svg, x, y }) => {
 export const renderScene1 = () => {
   const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
   const container = svg.append('g');
-  const years = [2008, 2024];
+  const years = [2007, 2025];
   const goalDifferential = [0, 0.8];
   const x = d3
     .scaleLinear()
@@ -147,9 +135,10 @@ export const renderScene1 = () => {
         .attr('stroke-width', 2)
         .attr('d', line);
 
+      // Animating the line. Source: https://medium.com/@louisemoxy/create-a-d3-line-chart-animation-336f1cb7dd61
       const totalLength = path.node().getTotalLength();
       path
-        .attr('stroke-dasharray', `${totalLength} ${totalLength}`)
+        .attr('stroke-dasharray', totalLength)
         .attr('stroke-dashoffset', totalLength)
         .transition()
         .duration(10000)
