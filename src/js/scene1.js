@@ -103,7 +103,7 @@ export const renderScene1 = () => {
       .append('path')
       .datum(preCovidData)
       .attr('fill', 'none')
-      .attr('stroke', 'silver')
+      .attr('stroke', 'steelblue')
       .attr('stroke-width', 3)
       .attr('d', line);
 
@@ -111,7 +111,7 @@ export const renderScene1 = () => {
       .append('path')
       .datum(duringCovidData)
       .attr('fill', 'none')
-      .attr('stroke', 'silver')
+      .attr('stroke', 'steelblue')
       .attr('stroke-width', 3)
       .attr('d', line);
 
@@ -119,7 +119,7 @@ export const renderScene1 = () => {
       .append('path')
       .datum(postCovidData)
       .attr('fill', 'none')
-      .attr('stroke', 'silver')
+      .attr('stroke', 'steelblue')
       .attr('stroke-width', 3)
       .attr('d', line);
 

@@ -73,7 +73,7 @@ export const renderScene3 = () => {
     .join('option')
     .attr('value', (d) => d)
     .text((d) => d)
-    .property('selected', (d) => d === 2018);
+    .property('selected', (d) => d === 2008);
   toSel
     .selectAll('option')
     .data(years)
