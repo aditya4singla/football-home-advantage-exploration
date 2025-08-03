@@ -1,4 +1,4 @@
-import { renderScene1 } from './scene1';
+import { renderScene1 } from './scene1.js';
 
 let scene = 1;
 

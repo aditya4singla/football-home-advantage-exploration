@@ -1,4 +1,4 @@
-import { svgWidth, svgHeight, SVG_CUSHION } from './constants';
+import { svgWidth, svgHeight, SVG_CUSHION } from './constants.js';
 
 // Steps:
 // 1. Show the goal differential from 2000 to 2020
