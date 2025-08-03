@@ -1,4 +1,6 @@
 import { renderScene1 } from './scene1.js';
+import { renderScene2 } from './scene2.js';
+import { renderScene3 } from './scene3.js';
 
 let scene = 0;
 
@@ -21,7 +23,9 @@ function renderScene(s) {
   d3.select('#scene1').style('display', 'none');
   d3.select('#scene1-chart').select('svg').remove();
   d3.select('#scene2').style('display', 'none');
+  d3.select('#scene2-chart').select('svg').remove();
   d3.select('#scene3').style('display', 'none');
+  d3.select('#scene3-chart').select('svg').remove();
 
   if (s === 0) {
     d3.select('#intro').style('display', 'flex');
@@ -30,6 +34,16 @@ function renderScene(s) {
     d3.select('#next-btn').style('display', 'block');
     d3.select('#prev-btn').style('display', 'block');
     renderScene1();
+  } else if (s === 2) {
+    d3.select('#scene2').style('display', 'block');
+    d3.select('#next-btn').style('display', 'block');
+    d3.select('#prev-btn').style('display', 'block');
+    renderScene2();
+  } else if (s === 3) {
+    d3.select('#scene3').style('display', 'block');
+    d3.select('#next-btn').style('display', 'none');
+    d3.select('#prev-btn').style('display', 'block');
+    renderScene3();
   }
 }
 

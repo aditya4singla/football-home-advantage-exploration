@@ -111,10 +111,25 @@
       </div>
     </div>
 
-    <div id="scene2">
-      <h3>Scene 2: Let's zoom in and see specific leagues.</h3>
-      <!-- <button onclick="togglePlayForScene2(true)">Play</button>
-      <button onclick="togglePlayForScene2(false)">Pause</button> -->
+    <div class="scene" id="scene2">
+      <h2 class="title">Scene 2: Has this change been uniform across the world?</h2>
+
+      <div class="description">
+        <p>
+          This chart zooms into 2018-2025 and compares two extremes: the league that recovered most of its pre-COVID
+          home advantage (Premier League) versus the one that remains far below its old level (Bundesliga).
+        </p>
+
+          Dashed lines show the pre-COVID baseline for each league so you can see how far they've diverged from their
+          previous normal.
+        </p>
+      </div>
+
+      <div class="content">
+        <div class="chart" id="scene2-chart" style="flex: 2"></div>
+
+        <div class="commentary" id="scene2-commentary"></div>
+      </div>
     </div>
     <div id="scene3">
       <h3>Scene 3: User driven exploration.</h3>

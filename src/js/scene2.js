@@ -1,37 +1,11 @@
 import { svgWidth, svgHeight, SVG_CUSHION } from './constants.js';
 
-// Steps:
-// 1. Show the goal differential from 2000 to 2020
-// 2. Pause at 2020 and annotate saying Covid disrupted the season
-// 3. Show the goal differential drop steply from 2020 to 2022
-// 4. Show the goal differential rise again from 2022 to 2025
-
-const stepSequence = [
-  { start: 2008, end: 2020, duration: 7000, animate: true },
-  { start: 2020, end: 2021, duration: 3000, animate: false }, // pause at 2020
-  { start: 2020, end: 2022, duration: 10000 },
-  { start: 2022, end: 2025, duration: 7000 },
-];
-
-const state = {
-  currentYear: 2000,
-  step: 1,
-};
-
-const colorPalette = d3.scaleOrdinal(d3.schemeObservable10);
-
 const DATA_PATH = './src/data/scene1/homeAdvantageYearly.csv';
 
 const mapDivisionToReadableName = (division) => {
   switch (division) {
     case 'E1':
       return 'Premier League';
-    case 'SP1':
-      return 'La Liga';
-    case 'I1':
-      return 'Serie A';
-    case 'F1':
-      return 'Ligue 1';
     case 'G1':
       return 'Bundesliga';
     default:
@@ -39,113 +13,194 @@ const mapDivisionToReadableName = (division) => {
   }
 };
 
-// Splits data into: pre-covid, during-covid, and post-covid
-const formatData = (data, years) => {
-  const startYear = years[0];
-  const endYear = years[1];
-
-  const filteredData = data.filter((d) => d.Year >= startYear && d.Year <= endYear);
-
-  const nested = d3.group(filteredData, (d) => d.Division);
-
-  return { filteredData, nested };
-};
-
-const drawLegend = (svg, divisions) => {
-  const legend = svg
-    .append('g')
-    .attr('class', 'legend')
-    .attr('transform', `translate(${svgWidth - 150}, ${SVG_CUSHION})`);
-
-  divisions.forEach((division, i) => {
-    const label = mapDivisionToReadableName(division);
-
-    const legendItem = legend.append('g').attr('transform', `translate(0, ${i * 20})`);
-
-    legendItem.append('rect').attr('width', 12).attr('height', 12).attr('fill', colorPalette(division));
-
-    legendItem
-      .append('text')
-      .attr('x', 20)
+const drawLegend = (svg) => {
+  const legend = svg.append('g').attr('transform', `translate(${svgWidth - 220}, ${SVG_CUSHION})`);
+  const items = [
+    { label: `Premier League`, color: 'green' },
+    { label: `Bundesliga`, color: 'red' },
+  ];
+  items.forEach((it, i) => {
+    const g = legend.append('g').attr('transform', `translate(0, ${i * 18})`);
+    g.append('rect').attr('width', 12).attr('height', 12).attr('fill', it.color);
+    g.append('text')
+      .attr('x', 18)
       .attr('y', 10)
-      .text(label)
+      .text(it.label)
       .style('font-size', '12px')
       .attr('alignment-baseline', 'middle');
   });
 };
 
 const drawAxes = ({ svg, x, y }) => {
-  let xAxis = d3.axisBottom(x).tickValues([2010, 2015, 2020, 2022, 2025]).tickFormat(d3.format('d'));
-  let yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format('.1f'));
+  const xAxis = d3
+    .axisBottom(x)
+    .tickValues([2018, 2020, 2022, 2025].map((y) => new Date(y, 0, 1)))
+    .tickFormat(d3.timeFormat('%Y'));
+  const yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format('.1f'));
 
   svg
     .append('g')
-    .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${svgHeight - SVG_CUSHION})`)
     .call(xAxis);
+  svg.append('g').attr('transform', `translate(${SVG_CUSHION}, 0)`).call(yAxis);
 
-  svg.append('g').attr('class', 'y-axis').attr('transform', `translate(${SVG_CUSHION}, 0)`).call(yAxis);
+  svg
+    .append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('x', -svgHeight / 2)
+    .attr('y', SVG_CUSHION - 25)
+    .attr('dy', '-1em')
+    .style('text-anchor', 'middle')
+    .style('font-size', '14px')
+    .text('Home Goal Differential');
+
+  svg
+    .append('text')
+    .attr('x', svgWidth / 2)
+    .attr('y', svgHeight - SVG_CUSHION + 40)
+    .style('text-anchor', 'middle')
+    .style('font-size', '14px')
+    .text('Year');
 };
 
-export const renderScene1 = () => {
-  const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
-  const container = svg.append('g');
-  const years = [2007, 2025];
-  const goalDifferential = [0, 0.8];
-  const x = d3
-    .scaleLinear()
-    .domain(years)
-    .range([SVG_CUSHION, svgWidth - SVG_CUSHION]);
-  const y = d3
-    .scaleLinear()
-    .domain(goalDifferential)
-    .range([svgHeight - SVG_CUSHION, SVG_CUSHION]);
-  drawAxes({ svg, x, y });
+const mean = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
+
+const calculateBaseline = (data) => {
+  return mean(data.filter((d) => d.Year === 2018 || d.Year === 2019).map((d) => d.avg_goal_diff));
+};
+
+const updateCommentary = (text) => {
+  d3.select('#scene2-commentary').text(text);
+};
+
+export const renderScene2 = () => {
+  const svg = d3.select('#scene2-chart').append('svg').attr('width', svgWidth).attr('height', svgHeight);
+  const zoomStart = new Date(2018, 0, 1);
+  const zoomEnd = new Date(2025, 11, 31);
 
   d3.csv(DATA_PATH).then((data) => {
     data.forEach((d) => {
-      if (d.avg_goal_diff < 0) {
-        console.warn('Negative goal diff:', d);
-      }
+      d.Year = +d.Year;
+      d.avg_goal_diff = +d.avg_goal_diff;
+      d.date = new Date(d.Year, 0, 1);
     });
 
+    const filtered = data.filter((d) => d.date >= zoomStart && d.date <= zoomEnd);
+
+    const premierLeague = 'E1';
+    const bundesliga = 'G1';
+    const premierLeagueData = filtered.filter((d) => d.Division === premierLeague);
+    const bundesligaData = filtered.filter((d) => d.Division === bundesliga);
+
+    const premierLeagueBaseline = calculateBaseline(premierLeagueData);
+    const bundesligaBaseline = calculateBaseline(bundesligaData);
+
+    const x = d3
+      .scaleTime()
+      .domain([zoomStart, zoomEnd])
+      .range([SVG_CUSHION, svgWidth - SVG_CUSHION]);
+    const y = d3
+      .scaleLinear()
+      .domain([0.05, 0.6])
+      .range([svgHeight - SVG_CUSHION, SVG_CUSHION]);
+
+    drawAxes({ svg, x, y });
+    drawLegend(svg);
+
+    updateCommentary(
+      `The Premier League and Bundesliga have shown different trends in home goal differential since 2018.`,
+    );
+
+    d3.timeout(() => {
+      updateCommentary(
+        'While Bundesliga used to have the strongest home advantage, it now has the weakest. The Premier League, on the other hand, has maintained a strong home advantage throughout this period.',
+      );
+    }, 5000);
+
+    d3.timeout(() => {
+      updateCommentary('So it seems the change to home stadium advantage has not been uniform across leagues.');
+    }, 10000);
+
+    svg
+      .append('line')
+      .attr('x1', x(zoomStart))
+      .attr('x2', x(zoomEnd))
+      .attr('y1', y(premierLeagueBaseline))
+      .attr('y2', y(premierLeagueBaseline))
+      .attr('stroke', 'green')
+      .attr('stroke-dasharray', '4 4')
+      .attr('stroke-width', 1);
+
+    svg
+      .append('text')
+      .attr('x', x(zoomEnd))
+      .attr('y', y(premierLeagueBaseline) - 5)
+      .attr('text-anchor', 'end')
+      .attr('fill', 'green')
+      .style('font-size', '12px')
+      .text('Premier League pre-COVID baseline');
+
+    svg
+      .append('line')
+      .attr('x1', x(zoomStart))
+      .attr('x2', x(zoomEnd))
+      .attr('y1', y(bundesligaBaseline))
+      .attr('y2', y(bundesligaBaseline))
+      .attr('stroke', 'red')
+      .attr('stroke-dasharray', '4 4')
+      .attr('stroke-width', 1);
+
+    svg
+      .append('text')
+      .attr('x', x(zoomEnd))
+      .attr('y', y(bundesligaBaseline) - 5)
+      .attr('text-anchor', 'end')
+      .attr('fill', 'red')
+      .style('font-size', '12px')
+      .text('Bundesliga pre-COVID baseline');
+
+    // line generator
     const line = d3
       .line()
-      .x((d) => x(d.Year))
+      .x((d) => x(d.date))
       .y((d) => y(d.avg_goal_diff))
       .curve(d3.curveMonotoneX);
 
-    const divisionGroup = container.append('g').attr('class', 'division-lines');
-    const divisionPaths = new Map();
+    const container = svg.append('g');
 
-    state.currentYear = state.currentYear + 1;
-    const { filteredData, nested } = formatData(data, years);
+    // draw the two league lines
+    const premierLeaguePath = container
+      .append('path')
+      .datum(premierLeagueData)
+      .attr('fill', 'none')
+      .attr('stroke', 'green')
+      .attr('stroke-width', 3)
+      .attr('d', line);
 
-    drawLegend(svg, Array.from(nested.keys()));
+    let totalLength = premierLeaguePath.node().getTotalLength();
+    premierLeaguePath
+      .attr('stroke-dasharray', totalLength)
+      .attr('stroke-dashoffset', totalLength)
+      .transition()
+      .duration(8000)
+      .ease(d3.easeLinear)
+      .attr('stroke-dashoffset', 0);
 
-    divisionGroup.selectAll('path').remove();
+    const bundesligaPath = container
+      .append('path')
+      .datum(bundesligaData)
+      .attr('fill', 'none')
+      .attr('stroke', 'red')
+      .attr('stroke-width', 3)
+      .attr('d', line);
 
-    for (const [division, vals] of nested) {
-      const sorted = vals.sort((a, b) => a.Year - b.Year);
-      const path = divisionGroup
-        .append('path')
-        .datum(sorted)
-        .attr('fill', 'none')
-        .attr('stroke', colorPalette(division))
-        .attr('stroke-width', 2)
-        .attr('d', line);
-
-      // Animating the line. Source: https://medium.com/@louisemoxy/create-a-d3-line-chart-animation-336f1cb7dd61
-      const totalLength = path.node().getTotalLength();
-      path
-        .attr('stroke-dasharray', totalLength)
-        .attr('stroke-dashoffset', totalLength)
-        .transition()
-        .duration(10000)
-        .ease(d3.easeLinear)
-        .attr('stroke-dashoffset', 0);
-
-      divisionPaths.set(division, { path, data: sorted });
-    }
+    totalLength = bundesligaPath.node().getTotalLength();
+    bundesligaPath
+      .attr('stroke-dasharray', totalLength)
+      .attr('stroke-dashoffset', totalLength)
+      .transition()
+      .duration(8000)
+      .ease(d3.easeLinear)
+      .attr('stroke-dashoffset', 0);
   });
 };

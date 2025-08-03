@@ -53,7 +53,7 @@ const drawAxes = ({ svg, x, y }) => {
 
 export const renderScene1 = () => {
   const svg = d3.select('#scene1-chart').append('svg').attr('width', svgWidth).attr('height', svgHeight);
-  const goalDifferential = [0.1, 0.5];
+  const goalDifferential = [0.05, 0.55];
 
   d3.csv(DATA_PATH).then((data) => {
     data.forEach((d) => {
