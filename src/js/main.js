@@ -15,17 +15,14 @@ function prevScene() {
 }
 
 function renderScene(s) {
-  console.log('HUH');
   d3.select('#vis').html(''); // clear previous
 
   if (s === 1) {
-    console.log('Rendering Scene 1');
     renderScene1();
   }
 }
 
 function main() {
-  console.log('Main function started');
   renderScene(1);
   d3.select('button.next').on('click', nextScene);
   d3.select('button.prev').on('click', prevScene);

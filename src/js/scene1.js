@@ -20,19 +20,19 @@ const state = {
 
 const colorPalette = d3.scaleOrdinal(d3.schemeObservable10);
 
-const DATA_PATH = './src/data/Scene1HomeAdvantage.csv';
+const DATA_PATH = './src/data/scene1/homeAdvantageYearly.csv';
 
 const mapDivisionToReadableName = (division) => {
   switch (division) {
     case 'E1':
       return 'Premier League';
-    case 'S1':
+    case 'SP1':
       return 'La Liga';
     case 'I1':
       return 'Serie A';
     case 'F1':
       return 'Ligue 1';
-    case 'B1':
+    case 'G1':
       return 'Bundesliga';
     default:
       return 'Unknown Division';
@@ -52,20 +52,42 @@ const togglePlayForScene1 = (shouldPlay) => {
   }
 };
 
-const getVariableDataForScene1 = (data) => {
-  // 1. Let us filter the data till currentYear
+const formatData = (data, years) => {
+  const startYear = years[0];
+  const endYear = years[1];
 
-  // filteredData = data.filter((d) => d.Year <= Math.floor(state.currentYear));
-  const filteredData = data;
+  const filteredData = data.filter((d) => d.Year >= startYear && d.Year <= endYear);
 
   const nested = d3.group(filteredData, (d) => d.Division);
 
   return { filteredData, nested };
 };
 
-const drawAxes = ({ svg, x, y }) => {
-  let xAxis = d3.axisBottom(x).ticks(12).tickFormat(d3.format('d'));
+const drawLegend = (svg, divisions) => {
+  const legend = svg
+    .append('g')
+    .attr('class', 'legend')
+    .attr('transform', `translate(${svgWidth - 150}, ${SVG_CUSHION})`);
 
+  divisions.forEach((division, i) => {
+    const label = mapDivisionToReadableName(division);
+
+    const legendItem = legend.append('g').attr('transform', `translate(0, ${i * 20})`);
+
+    legendItem.append('rect').attr('width', 12).attr('height', 12).attr('fill', colorPalette(division));
+
+    legendItem
+      .append('text')
+      .attr('x', 20)
+      .attr('y', 10)
+      .text(label)
+      .style('font-size', '12px')
+      .attr('alignment-baseline', 'middle');
+  });
+};
+
+const drawAxes = ({ svg, x, y }) => {
+  let xAxis = d3.axisBottom(x).tickValues([2008, 2015, 2020, 2022, 2024]).tickFormat(d3.format('d'));
   let yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format('.1f'));
 
   svg
@@ -79,8 +101,8 @@ const drawAxes = ({ svg, x, y }) => {
 
 export const renderScene1 = () => {
   const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
-  const container = svg.append('g').attr('transform', `translate(${50},${50})`);
-  const years = [2000, 2025];
+  const container = svg.append('g');
+  const years = [2008, 2024];
   const goalDifferential = [0, 0.8];
   const x = d3
     .scaleLinear()
@@ -93,18 +115,25 @@ export const renderScene1 = () => {
   drawAxes({ svg, x, y });
 
   d3.csv(DATA_PATH).then((data) => {
+    data.forEach((d) => {
+      if (d.avg_goal_diff < 0) {
+        console.warn('Negative goal diff:', d);
+      }
+    });
+
     const line = d3
       .line()
       .x((d) => x(d.Year))
       .y((d) => y(d.avg_goal_diff))
       .curve(d3.curveMonotoneX);
 
-    // container for division lines
     const divisionGroup = container.append('g').attr('class', 'division-lines');
     const divisionPaths = new Map();
 
     state.currentYear = state.currentYear + 1;
-    const { filteredData, nested } = getVariableDataForScene1(data);
+    const { filteredData, nested } = formatData(data, years);
+
+    drawLegend(svg, Array.from(nested.keys()));
 
     divisionGroup.selectAll('path').remove();
 
@@ -114,7 +143,7 @@ export const renderScene1 = () => {
         .append('path')
         .datum(sorted)
         .attr('fill', 'none')
-        .attr('stroke', colorPalette)
+        .attr('stroke', colorPalette(division))
         .attr('stroke-width', 2)
         .attr('d', line);
 
