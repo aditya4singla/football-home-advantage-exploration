@@ -1,7 +1,9 @@
 let scene = 1;
 
-const svgWidth = 1200;
-const svgHeight = 900;
+const svgWidth = 900;
+const svgHeight = 600;
+
+const SVG_CUSHION = 50;
 
 function nextScene() {
   scene++;
@@ -15,26 +17,55 @@ function prevScene() {
   }
 }
 
+const mapDivisionToReadableName = (division) => {
+  switch (division) {
+    case 'E1':
+      return 'Premier League';
+    case 'S1':
+      return 'La Liga';
+    case 'I1':
+      return 'Serie A';
+    case 'F1':
+      return 'Ligue 1';
+    case 'B1':
+      return 'Bundesliga';
+    default:
+      return 'Unknown Division';
+  }
+};
+
 function renderScene(s) {
   d3.select('#vis').html(''); // clear previous
 
   const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
 
   if (s === 1) {
-    svg.data('data/Scene1HomeAdvantage.csv').attr('width');
+    const years = [2013, 2025];
+    const goalDifferential = [0, 0.8];
 
-    // Scene 1: Overview
-    svg.append('text').attr('x', 50).attr('y', 50).text('Scene 1: Overview of the Data');
+    const x = d3
+      .scaleLinear()
+      .domain(years)
+      .range([SVG_CUSHION, svgWidth - SVG_CUSHION]);
+    let xAxis = d3.axisBottom(x).ticks(12).tickFormat(d3.format('d'));
+
+    const y = d3
+      .scaleLinear()
+      .domain(goalDifferential)
+      .range([svgHeight - SVG_CUSHION, SVG_CUSHION]);
+    let yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format('.1f'));
 
     svg
-      .selectAll('circle')
-      .data([10, 30, 50, 70])
-      .enter()
-      .append('circle')
-      .attr('cx', (d) => d * 5)
-      .attr('cy', 200)
-      .attr('r', 10)
-      .attr('fill', 'steelblue');
+      .append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0, ${svgHeight - SVG_CUSHION})`)
+      .call(xAxis);
+
+    svg.append('g').attr('class', 'y-axis').attr('transform', `translate(${SVG_CUSHION}, 0)`).call(yAxis);
+
+    d3.csv('data/Scene1HomeAdvantage.csv').then((data) => {
+      console.log(data);
+    });
   }
 }
 
