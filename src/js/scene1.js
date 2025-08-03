@@ -6,60 +6,10 @@ import { svgWidth, svgHeight, SVG_CUSHION } from './constants.js';
 // 3. Show the goal differential drop steply from 2020 to 2022
 // 4. Show the goal differential rise again from 2022 to 2025
 
-const stepSequence = [
-  { start: 2008, end: 2020, duration: 7000, animate: true },
-  { start: 2020, end: 2021, duration: 3000, animate: false }, // pause at 2020
-  { start: 2020, end: 2022, duration: 10000 },
-  { start: 2022, end: 2025, duration: 7000 },
-];
-
-const state = {
-  currentYear: 2000,
-  step: 1,
-};
-
-const colorPalette = d3.scaleOrdinal(d3.schemeObservable10);
-
 const DATA_PATH = './src/data/scene1/globalHalfYear.csv';
 
-// Splits data into: pre-covid, during-covid, and post-covid
-const formatData = (data, years) => {
-  data.forEach((d) => {
-    d.Date = new Date(d.Date);
-    d.avg_goal_diff = +d.avg_goal_diff;
-  });
-
-  const startYear = years[0];
-  const endYear = years[1];
-
-  const filteredData = data.filter((d) => d.Year >= startYear && d.Year <= endYear);
-
-  const nested = d3.group(filteredData, (d) => d.Division);
-
-  return { filteredData, nested };
-};
-
-const drawLegend = (svg, divisions) => {
-  const legend = svg
-    .append('g')
-    .attr('class', 'legend')
-    .attr('transform', `translate(${svgWidth - 150}, ${SVG_CUSHION})`);
-
-  divisions.forEach((division, i) => {
-    const label = mapDivisionToReadableName(division);
-
-    const legendItem = legend.append('g').attr('transform', `translate(0, ${i * 20})`);
-
-    legendItem.append('rect').attr('width', 12).attr('height', 12).attr('fill', colorPalette(division));
-
-    legendItem
-      .append('text')
-      .attr('x', 20)
-      .attr('y', 10)
-      .text(label)
-      .style('font-size', '12px')
-      .attr('alignment-baseline', 'middle');
-  });
+const updateCommentary = (text) => {
+  d3.select('#scene1-commentary').text(text).transition().duration(300);
 };
 
 const drawAxes = ({ svg, x, y }) => {
@@ -102,7 +52,7 @@ const drawAxes = ({ svg, x, y }) => {
 };
 
 export const renderScene1 = () => {
-  const svg = d3.select('#vis').append('svg').attr('width', svgWidth).attr('height', svgHeight);
+  const svg = d3.select('#scene1-chart').append('svg').attr('width', svgWidth).attr('height', svgHeight);
   const goalDifferential = [0.1, 0.5];
 
   d3.csv(DATA_PATH).then((data) => {
@@ -130,22 +80,140 @@ export const renderScene1 = () => {
 
     const container = svg.append('g');
 
-    const path = container
+    const preCovidData = data.filter((d) => d.date <= new Date(2019, 9, 1));
+    const duringCovidData = data.filter((d) => d.date >= new Date(2019, 3, 1) && d.date <= new Date(2021, 3, 1));
+    const postCovidData = data.filter((d) => d.date >= new Date(2021, 1, 1));
+
+    const stadiumsClosedAnnotation = {
+      x: x(preCovidData[preCovidData.length - 1].date),
+      y: y(preCovidData[preCovidData.length - 1].avg_goal_diff),
+    };
+
+    const stadiumsReopenedAnnotation = {
+      x: x(duringCovidData[duringCovidData.length - 1].date),
+      y: y(duringCovidData[duringCovidData.length - 1].avg_goal_diff),
+    };
+
+    const finalAnnotation = {
+      x: x(postCovidData[postCovidData.length - 1].date),
+      y: y(postCovidData[postCovidData.length - 1].avg_goal_diff),
+    };
+
+    const preCovidPath = container
       .append('path')
-      .datum(data)
+      .datum(preCovidData)
       .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
+      .attr('stroke', 'silver')
       .attr('stroke-width', 3)
       .attr('d', line);
 
+    const duringCovidPath = container
+      .append('path')
+      .datum(duringCovidData)
+      .attr('fill', 'none')
+      .attr('stroke', 'silver')
+      .attr('stroke-width', 3)
+      .attr('d', line);
+
+    const postCovidPath = container
+      .append('path')
+      .datum(postCovidData)
+      .attr('fill', 'none')
+      .attr('stroke', 'silver')
+      .attr('stroke-width', 3)
+      .attr('d', line);
+
+    updateCommentary(
+      'Here we can see that the average home goal differential in football has been around 0.5 goals per game. This shows a clear home advantage...',
+    );
+
     // Animating the line. Source: https://medium.com/@louisemoxy/create-a-d3-line-chart-animation-336f1cb7dd61
-    const totalLength = path.node().getTotalLength();
-    path
+    let totalLength = preCovidPath.node().getTotalLength();
+    preCovidPath
       .attr('stroke-dasharray', totalLength)
       .attr('stroke-dashoffset', totalLength)
       .transition()
-      .duration(8000)
+      .duration(10000)
       .ease(d3.easeLinear)
-      .attr('stroke-dashoffset', 0);
+      .attr('stroke-dashoffset', 0)
+      .on('end', () => {
+        svg
+          .append('circle')
+          .attr('cx', stadiumsClosedAnnotation.x)
+          .attr('cy', stadiumsClosedAnnotation.y)
+          .attr('r', 4)
+          .attr('fill', 'red');
+
+        svg
+          .append('text')
+          .attr('x', stadiumsClosedAnnotation.x + 10)
+          .attr('y', stadiumsClosedAnnotation.y)
+          .text('COVID hits: Stadiums closed to public')
+          .attr('fill', 'red')
+          .style('font-size', '12px')
+          .style('font-weight', 'bold');
+
+        updateCommentary('Suddenly COVID hits, stadiums are closed, and we see a sharp decline in this advantage');
+      });
+
+    totalLength = duringCovidPath.node().getTotalLength();
+    duringCovidPath
+      .attr('stroke-dasharray', totalLength)
+      .attr('stroke-dashoffset', totalLength)
+      .transition()
+      .delay(13000)
+      .duration(6000)
+      .ease(d3.easeLinear)
+      .attr('stroke-dashoffset', 0)
+      .on('end', () => {
+        svg
+          .append('circle')
+          .attr('cx', stadiumsReopenedAnnotation.x)
+          .attr('cy', stadiumsReopenedAnnotation.y)
+          .attr('r', 4)
+          .attr('fill', 'green');
+        svg
+          .append('text')
+          .attr('x', stadiumsReopenedAnnotation.x + 10)
+          .attr('y', stadiumsReopenedAnnotation.y)
+          .text('Stadiums reopened')
+          .attr('fill', 'green')
+          .style('font-size', '12px')
+          .style('font-weight', 'bold');
+
+        updateCommentary('As stadiums reopened, we see a gradual return to the pre-COVID home advantage levels.');
+      });
+
+    totalLength = postCovidPath.node().getTotalLength();
+    postCovidPath
+      .attr('stroke-dasharray', totalLength)
+      .attr('stroke-dashoffset', totalLength)
+      .transition()
+      .delay(19000)
+      .duration(7000)
+      .ease(d3.easeLinear)
+      .attr('stroke-dashoffset', 0)
+      .on('end', () => {
+        svg
+          .append('circle')
+          .attr('cx', finalAnnotation.x)
+          .attr('cy', finalAnnotation.y)
+          .attr('r', 4)
+          .attr('fill', 'orange');
+        svg
+          .append('text')
+          .attr('x', finalAnnotation.x + 10)
+          .attr('y', finalAnnotation.y)
+          .text('Now')
+          .attr('fill', 'orange')
+          .style('font-size', '12px')
+          .style('font-weight', 'bold');
+
+        updateCommentary(
+          "It's clear that home advantage is trending upwards again, but will it ever return to pre-COVID levels?",
+        );
+
+        document.getElementById('next-btn').disabled = false;
+      });
   });
 };

@@ -16,33 +16,99 @@
         fill: red;
         font-size: 14px;
       }
+      #intro {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 1rem;
+        background: wheat;
+        box-sizing: border-box;
+      }
+
+      .intro-content {
+        max-width: 700px;
+        text-align: center;
+        padding: 32px;
+        border-radius: 12px;
+        background: white;
+      }
+
+      .btn {
+        background-color: violet;
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+      }
+      .btn:hover {
+        background-color: darkviolet;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .scene {
+        max-width: 1000px;
+        margin: 0 auto 2rem;
+      }
+      .commentary {
+        flex: 1;
+        padding: 12px;
+        background: wheat;
+        border-radius: 8px;
+        height: 50%;
+      }
+      .title {
+        margin: 0.5rem 0;
+      }
+      .description p {
+        margin: 6px 0;
+      }
+      .content {
+        display: flex;
+        align-items: center;
+        gap: 36px;
+        margin: 1rem 0;
+      }
+      .nav {
+        margin-top: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+      }
     </style>
   </head>
   <body>
     <div id="intro">
-      <h2>How COVID impacted home stadium advantage in football</h2>
-
-      <p>
-        This visualization explores how "Home Advantage" has shifted over the years in the top 5 leagues in football.
-      </p>
+      <div class="intro-content">
+        <h1>How COVID Impacted Home Stadium Advantage in Football</h1>
+        <p>
+          This visualization walks through how home advantage has shifted during the pandemic and what recovery has
+          looked like in the top five European leagues.
+        </p>
+        <button class="btn" id="start-btn">Let's start!</button>
+      </div>
     </div>
 
-    <button>Next</button>
-    <button>Previous</button>
-    <br />
-    <br />
+    <div class="scene" id="scene1">
+      <h2 class="title">Scene 1: How has home advantage changed over time?</h2>
 
-    <div id="scene1">
-      <h3>Scene 1: How Has Home Advantage Changed Over Time?</h3>
-      <p id="scene1-description">
-        This chart looks at how home advantage in football has evolved over the past 15+ years.
-        <br /><br />
-        It shows the average goal difference between home and away teams in the top five European leagues over time.
-        <br /><br />
-        “Home goal differential” means the average number of goals scored by the home team minus those scored by the
-        away team. Any positive value indicates that there is a home advantage, however, the smaller the value, the less
-        the advantage is felt.
-      </p>
+      <div class="description">
+        <p>Let's look at the average home goal differential over the last 15 years in the top five European leagues.</p>
+        <p>Definition: “Home goal differential” = goals by home team minus goals by away team.</p>
+      </div>
+
+      <div class="content">
+        <div class="chart" id="scene1-chart" style="flex: 2"></div>
+
+        <div class="commentary" id="scene1-commentary"></div>
+      </div>
     </div>
 
     <div id="scene2">
@@ -54,7 +120,10 @@
       <h3>Scene 3: User driven exploration.</h3>
     </div>
 
-    <div id="vis"></div>
+    <div class="nav">
+      <button class="btn" id="prev-btn">Previous</button>
+      <button class="btn" id="next-btn" disabled>Next</button>
+    </div>
 
     <script type="module" src="./src/js/main.js"></script>
   </body>
